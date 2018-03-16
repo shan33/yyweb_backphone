@@ -1,0 +1,104 @@
+//
+   Created by xulanshan on 17-7-6.
+
+extend ../layout
+
+block header
+    link( href="stylesheets/new.css" rel="stylesheet" )
+block content
+    .row.clearfix
+        #ads.col-md-12.column
+            .jumbotron
+                h1 全新商区诚邀商家入驻中...
+                p &nbsp;这是一个专属土家交易的板块
+                p &nbsp;在这里你可以查看你感兴趣的内容
+        .col-md-12.column
+            #search_store       <!--搜索-->
+                .input-group
+                    input.form-control( type='text' )
+                    span.input-group-addon 查找
+        .col-md-12.column
+            #choose_store       <!--选择-->
+                a( href='#eat-to' )
+                    u 吃
+                a( href='#drink-to' )
+                    u 喝
+                a( href='#handmake-to' )
+                    u 编织
+                a( href='#other-to' )
+                    u ...
+        .col-md-12.column       <!--幻灯片商品-->
+            #new-store.carousel.slide
+                ol.carousel-indicators
+                    li.active( data-slide-to='0' , data-target='#new-store' )
+                    li( data-slide-to='1' , data-target='#new-store' )
+                .carousel-inner
+                    .item.active
+                        img( src='pic/store_shefan.png' )
+                        .carousel-caption
+                            <h2>土家社饭</h2>
+                            <p>简介</p>
+                    .item
+                        img( src='pic/store_mijiu.png' )
+                        .carousel-caption
+                            <h2>米酒</h2>
+                            <p>简介</p>
+                a.carousel-control.left( href="#new-store" , data-slide="prev" )
+                    span.glyphicon.glyphicon-chevron-left
+                a.right.carousel-control( href="#new-store" , data-slide="next" )
+                    span.glyphicon.glyphicon-chevron-right
+
+        .col-md-12.column
+            .panel.panel-default.little_thing
+                .panel-heading
+                    p.panel-title
+                        a#eat-to( href='#eat' , data-toggle='collapse' ) 吃
+                #eat.panel-collapse.collapse
+                    .panel-body
+                        .col-md-3
+                            .panel-heading
+                                p 土家腊肉
+                            .panel-body
+                                img(src="pic/store_larou.png", height="100px", width="100%")
+                                p ￥38.6
+                                a(href="https://detail.tmall.com/item.htm?id=12712496965&ali_refid=a3_430680_1006:1103761695:N:%E8%85%8A%E8%82%89:00f376ecded41a67b31ba48c47d188c3&ali_trackid=1_00f376ecded41a67b31ba48c47d188c3&spm=a2e15.8296325.10002.1") 跳转购买
+                        
+                        .col-md-3
+                            .panel-heading
+                                p 重庆酉阳绿豆粉
+                            .panel-body
+
+                                img(src="pic/store_lvdoufen_!.png", height="100px", width="100%")
+                                p ￥7.60
+                                a(href="https://item.taobao.com/item.htm?id=557908240459&ali_refid=a3_430680_1006:1151284534:N:%E9%94%85%E5%B7%B4%E7%B2%89:2e139fa03b757e231e1c74504e9500e9&ali_trackid=1_2e139fa03b757e231e1c74504e9500e9&spm=a2e15.8296325.10002.5") 跳转购买
+                        .col-md-3
+        .col-md-12.column
+            .panel.panel-default.little_thing
+                .panel-heading
+                    p.panel-title
+                        a#drink-to( href='#drink' , data-toggle='collapse' ) 喝
+                #drink.panel-collapse.collapse
+                    .panel-body
+                        .col-md-3
+                            .panel-heading
+                                p 土家自酿米酒
+                            .panel-body
+
+                                img(src="pic/store_mijiu_1.png", height="200px", width="100%")
+                                p ￥318
+                                a(href="https://item.taobao.com/item.htm?id=538593152550&ali_refid=a3_430680_1006:1123585725:N:%E5%8E%9F%E6%B5%86%E7%99%BD%E9%85%92+%E9%AB%98%E5%BA%A6:6a8d675a614d0571f2f26c06e2e0877c&ali_trackid=1_6a8d675a614d0571f2f26c06e2e0877c&spm=a2e15.8296325.10002.9") 跳转购买
+                        .col-md-3
+                            .panel-heading
+                                p 自酿白酒包谷烧
+                            .panel-body
+                                img(src="pic/store_baijiu_1.png", height="100px", width="100%")
+                                p ￥48.8
+                                a(href="https://item.taobao.com/item.htm?id=535424903212&ali_refid=a3_430680_1006:1123850050:N:%E7%99%BD%E9%85%92:7337ab25b0757bd4d0d4fac010a6e81a&ali_trackid=1_7337ab25b0757bd4d0d4fac010a6e81a&spm=a2e15.8296325.10002.18") 跳转购买
+                        .col-md-3
+                            .panel-heading
+                                p 暂无商品出售
+                            .panel-body
+
+                                img(src="pic/person2.jpg", height="100px", width="100%")
+                                p ￥***
+                                a(href="http://www.taobao.com") 跳转购买
