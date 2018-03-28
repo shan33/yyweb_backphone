@@ -23,7 +23,7 @@ var mydatabase = require('./modules/mysql') ;
 var app = express() ;
 app.use(express.static('public') ) ;
 app.set('views','./views') ;
-app.set('view engine','jade') ;
+app.set('view engine','html') ;
 app.use(body_parser.urlencoded({extended:true})) ;
 app.use(cookieParser('mySession')) ;
 app.use(session({
@@ -74,11 +74,11 @@ app.get('/',function(req,res){              //主页面
     })
 }) ;
 
-
+//====================================用户============================================================
 
 /*用户登录*/
 app.post('/user/login',function(req,res){
-    console.log( 'USER: login -- ' +req.body.username +" ---name"　+req.body.userpass +"----pass") ;
+  //  console.log( 'USER: login -- ' +req.body.username +" ---name"　+req.body.userpass +"----pass") ;
     async.waterfall([
         //查询
         function(callback){
@@ -86,7 +86,6 @@ app.post('/user/login',function(req,res){
                 if(result == null || result=='' )
                     callback(null, 0) ;
                 else{
-                    console.log( "login result："　+ result[0].NAME) ;
                     var user = {
                         name: result[0].NAME,
                         id: result[0].ID,
@@ -104,8 +103,8 @@ app.post('/user/login',function(req,res){
             console.log("no such user ") ;
             res.send(false) ;
         }else{
-            console.log( "login success-- " +myuser) ;
             req.session.Cookie = myuser ;
+            console.log( "login success-- " + req.session.Cookie) ;            
             res.send(true) ;
 
         }
@@ -115,7 +114,7 @@ app.post('/user/login',function(req,res){
 /*用户注册*/
 app.post('/user/add',function(req,res,next) {
 
-    console.log( 'USER: register -- ' +req.body.username +" --name"　+req.body.userpass +"--password" +req.body.minority +"--少数民族") ;
+//    console.log( 'USER: register -- ' +req.body.username +" --name"　+req.body.userpass +"--password" +req.body.minority +"--少数民族") ;
     async.waterfall([
         //查询
         function(callback){
@@ -131,19 +130,80 @@ app.post('/user/add',function(req,res,next) {
         }
         else{
             console.log( "register success-- " +myuser) ;
-            /*res.render('./pages/index',{
-                title: myuser
-            }) ;*/
             res.send('true');
         }
     })
 })
+
 /*退出登录*/
-app.post('/logout',function(req,res){
-    console.log('server.js--用户退出登录') ;
+app.post('/user/logout',function(req,res){
+    console.log('logout success-- ') ;
     req.session.Cookie = null ;
-    res.redirect('/') ;
+    res.send(true);
 }) ;
+
+/*获取个人信息*/
+app.get('/user/self_info',function(req,res){        //talking
+    var queryMean = req.query.message;
+    console.log(req.query.message + "----" + req.session.Cookie);
+    if (typeof(queryMean) == 'undefined') {
+        if (req.session.Cookie) {
+            res.send('暂无新的消息');
+        }
+        else
+            res.send(false);
+    } else {
+        if ( req.session.Cookie) {
+            var userID = req.session.Cookie.id;
+            console.log("query: " + queryMean + " ID:" +userID);
+            async.waterfall([
+                    //查询
+                    function (callback) {              
+                        if ( queryMean == 'post') {
+                            mydatabase.query(user.getSelfPostQuery, [userID], function (err, result) {
+                                if (result == null || result == '')
+                                    callback(null, {
+                                        name: "info",
+                                        result: '0'
+                                    });
+                                else {
+                                    // console.log(result[0]);
+                                    callback(null, {
+                                        name: "info",
+                                        result: result
+                                    });
+                                }
+                            });
+                        }else{
+                            mydatabase.query(user.getSelfMessageQuery, [userID], function (err, result) {
+                                if (result == null || result == '')
+                                    callback(null, {
+                                        name: "message",
+                                        result: '0'
+                                    });
+                                else {
+                                    callback(null, {
+                                        name: "message",
+                                        result: result
+                                    });
+                                }
+                            });
+                        }
+                    }
+                ], function (err, result) {
+                    if (err) {
+                        console.log(err);
+                        res.send('失败');
+                    }else {
+                        res.send(result);
+                    }
+                });
+        }else
+            res.send(false);
+    }
+});
+//====================================交流============================================================
+
 /*发帖*/
 app.post('/post',function(req,res){
     console.log("post: " + req.body.user +" : " +req.body.time +" -- " + req.body.title) ;
@@ -183,8 +243,9 @@ app.post('/post',function(req,res){
 
 
 }) ;
+
 /*获取帖子信息*/
-app.get('/getPosts',function(req,res){
+app.get('/talking/getPosts',function(req,res){
     console.log("get all posts") ;
     async.waterfall([
         //查询
@@ -203,11 +264,12 @@ app.get('/getPosts',function(req,res){
             res.send('0 ') ;
         }else{
             console.log( "get all posts success-- " ) ;
-            res.header("Access-Control-Allow-Origin", "http://itujia.cn");
             res.send(info) ;
         }
     })
 }) ;
+
+
 /*评论*/
 app.post('/setComments',function(req,res){
     //评论
@@ -242,6 +304,7 @@ app.post('/setComments',function(req,res){
     }else
         res.send('0') ;
 }) ;
+
 /*获取评论*/
 app.get('/getComments',function(req,res){
     //评论
@@ -272,8 +335,10 @@ app.get('/getComments',function(req,res){
     }) ;
 }) ;
 
-//获取文化界面评论信息
-app.get('/spe_info',function(req,res){
+//====================================文化界面============================================================
+
+//获取文化界面全部信息
+app.get('/culture/spe_info',function(req,res){
     var info_index = parseInt(req.query.index)+1 ;
     console.log( info_index );
     async.waterfall([
@@ -289,14 +354,20 @@ app.get('/spe_info',function(req,res){
             }) ;
         }
     ],function(err,result){
-
-                    res.send({
-                        info: speInfo[(speInfo.infoIndex[info_index])],
-                        talks: result
-                    });
-        }) ;
+        res.send({
+            info: speInfo[(speInfo.infoIndex[info_index])],
+            talks: result
+        });
+    }) ;
    
 }) ;
+
+
+
+
+
+
+
 
 /*页面跳转*/
 app.get('/culture',function(req,res){		//跳转culture页面
@@ -328,71 +399,7 @@ app.get('/new',function(req,res){		//talking
         title: '商品逛一逛'
     }) ;
 }) ;
-app.get('/self_info',function(req,res){		//talking
-    // console.log("server.js--self_info页面请求") ;
-    var queryMean = req.query.message;
-    // console.log(req.query.message + "----" +req.params.message);
-    if (typeof(queryMean) == 'undefined') {
-        // console.log("hjd");
-        if (req.session.Cookie) {
-            res.render('./pages/self-info', {
-                title: '个人信息',
-                //myInfo: '暂无新的消息'
-            });
-        }
-        else
-            res.send('0');
-    }else{
-        if( req.session.Cookie) {
-            var userID = req.session.Cookie.id;
-            console.log("query: " + queryMean +" ID:" +userID);
-            async.waterfall([
-                    //查询
-                    function (callback) {
-                        if (queryMean == 'info') {
-                            mydatabase.query(user.getSelfPostQuery, [userID], function (err, result) {
-                                if (result == null || result == '')
-                                    callback(null, {
-                                        name: "info",
-                                        result: '0'
-                                    });
-                                else {
-                                    // console.log(result[0]);
-                                    callback(null, {
-                                        name: "info",
-                                        result: result
-                                    });
-                                }
-                            });
-                        }else{
-                            mydatabase.query(user.getSelfMessageQuery, [userID], function (err, result) {
-                                if (result == null || result == '')
-                                    callback(null, {
-                                        name: "message",
-                                        result: '0'
-                                    });
-                                else {
-                                     // console.log(result[0]);
-                                    callback(null, {
-                                        name: "message",
-                                        result: result
-                                    });
-                                }
-                            });
-                        }
-                    }
-                ], function (err, result) {
-                    if (err) {
-                        console.log(err);
-                        res.send('失败');
-                    }else {
-                        res.send(result);
-                    }
-                });
-        }else
-            res.redirect('/');
-    }
-});
+
 
 //提交申请
 app.post('/other/tip',function(req,res){		

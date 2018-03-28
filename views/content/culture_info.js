@@ -1,0 +1,9 @@
+culture = [
+	{
+		img: '',
+		spot: '',
+		information: ''
+
+	}
+
+];
