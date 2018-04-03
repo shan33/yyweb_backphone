@@ -134,7 +134,7 @@ app.post('/user/add',function(req,res,next) {
         }
     })
 })
-
+ 
 /*退出登录*/
 app.post('/user/logout',function(req,res){
     console.log('logout success-- ') ;
@@ -157,7 +157,7 @@ app.get('/user/self_info',function(req,res){        //talking
             var userID = req.session.Cookie.id;
             console.log("query: " + queryMean + " ID:" +userID);
             async.waterfall([
-                    //查询
+                    //查询4
                     function (callback) {              
                         if ( queryMean == 'post') {
                             mydatabase.query(user.getSelfPostQuery, [userID], function (err, result) {
@@ -340,7 +340,7 @@ app.get('/getComments',function(req,res){
 //获取文化界面全部信息
 app.get('/culture/spe_info',function(req,res){
     var info_index = parseInt(req.query.index)+1 ;
-    console.log( info_index );
+    console.log( "culture page: " + info_index );
     async.waterfall([
         //查询
         function(callback){
@@ -357,11 +357,17 @@ app.get('/culture/spe_info',function(req,res){
         res.send({
             info: speInfo[(speInfo.infoIndex[info_index])],
             talks: result
+
         });
     }) ;
    
 }) ;
 
+app.get('/culture/spe_info/img', function(req, res){
+    console.log("culture page: img " + req.query.img);
+    let imgLocation = '../public/pic/';
+    res.sendFile(imgLocation + req.query.img);
+});
 
 
 
