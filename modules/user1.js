@@ -29,11 +29,14 @@ var user = {
     postMessageQueryWithTag: 'INSERT INTO ' + mybase.databases.post +' (POST_USER,TAG,TITLE,CONTENT,TIME) VALUES (?,?,?,?,?)',
     
     getTotalMessageQuery: 'SELECT post.ID,post.POST_USER,post.TITLE,post.CONTENT,post.TIME,user.NAME FROM ' +mybase.databases.post
-                            +' post,' +mybase.databases.user +' user WHERE post.POST_USER=user.id AND post.TAG=0 ORDER BY post.ID DESC',
+      +' post,' +mybase.databases.user +' user WHERE post.POST_USER=user.id AND post.TAG=0 ORDER BY post.ID DESC',
     getTotalMessageQueryWithTag: 'SELECT post.ID,post.POST_USER,post.TITLE,post.CONTENT,post.TIME, post.TAG,user.NAME FROM ' +mybase.databases.post
                             +' post,' +mybase.databases.user +' user WHERE post.POST_USER=user.id AND post.TAG=?',
     
     getSomeoneMessageQuery: 'SELECT * FROM ' +mybase.databases.post +" WHERE ID=(?)",
+
+    getPostCount: 'SELECT COUNT FROM ' + mybase.databases.post +" WHERE POST_USER=?",
+    getMessageCount: 'SELECT COUNT FROM ' + mybase.databases.commit + " IF_READ=0 AND WHERE SEND_TO=?",
 
     //评论
     CommentMessageQuery: 'INSERT INTO ' + mybase.databases.comment +' (SEND_FROM,SEND_TO,POST_ID,COMMIT_CONTENT,TIME) VALUES (?,?,?,?,?)',
@@ -45,6 +48,7 @@ var user = {
                          mybase.databases.user+ ' user,' +mybase.databases.post +' p WHERE p.ID=com.POST_ID AND com.IF_READ=0 AND com.SEND_TO=user.ID AND user.ID=(?)',
     getSelfPostQuery: 'SELECT p.*,u.NAME FROM ' +mybase.databases.post + " p," + mybase.databases.user +" u WHERE p.POST_USER=u.ID AND u.ID=(?)",
     
+    delSelPostQuery: 'DELETE FROM ' + mybase.databases.post + " WHERE ID=?",
     //提交申请
     getOtherTip: 'INSERT INTO TIP (PERSON_ID, TIME, TAG, X, Y, INFO) VALUES (?,?,?,?,?,?)'
 } ;

@@ -26,9 +26,10 @@ app.set('views','./views') ;
 app.set('view engine','html') ;
 app.use(body_parser.urlencoded({extended:true})) ;
 app.use(cookieParser('mySession')) ;
+
 app.use(session({
     secret: 'mySession',
-    resave: true,
+    resave: false,
     saveUninitialized: false
 })) ;
 
@@ -48,6 +49,8 @@ var port = 8080 ;
 app.listen(port,'0.0.0.0') ;
 console.log("begin: "+ port) ;
 
+
+var cookieUser = {};
 
 /*路由设置*/
 app.get('/',function(req,res){              //主页面
@@ -104,7 +107,9 @@ app.post('/user/login',function(req,res){
             res.send(false) ;
         }else{
             req.session.Cookie = myuser ;
-            console.log( "login success-- " + req.session.Cookie) ;            
+            cookieUser = req.session.Cookie;
+            console.log( "login success-- " + req.session.Cookie.id) ;            
+
             res.send(true) ;
 
         }
@@ -142,10 +147,69 @@ app.post('/user/logout',function(req,res){
     res.send(true);
 }) ;
 
-/*获取个人信息*/
+//====================================获取个人信息============================================================
+    app.get('/user/self_info/delPost', (req,res)=>{
+        let postId = req.postId;
+        mydatabase.query(user.delSelPostQuery, [postId], function (err, result) {
+            console.log("post----del");
+            res.send('ok');
+        });
+    });
+
+    app.get('/user/self_info/post', (req, res)=>{
+        var userID = cookieUser.id;
+        mydatabase.query(user.getSelfPostQuery, [userID], function (err, result) {
+            console.log("post----");
+            res.send({
+                name: "info",
+                result: result
+            });
+        });
+    });
+    app.get('/user/self_info/message', (req,res)=>{
+        var userID = cookieUser.id;
+        async.waterfall([(callback)=>{
+            mydatabase.query(user.getSelfMessageQuery, [userID], function (err, result) {
+                console.log("message----1");
+                /*res.send({
+                    name: "message",
+                    result: result
+                });*/
+                callback(null, result);
+            });
+        },
+        (args, callback)=>{
+            /*async.each(args, (arg, callback)=>{
+                console.log(arg);
+                mydatabase.query(user.findUserNameQuery, arg.SEND_FROM, function (err, result) {
+                    console.log("message----2" + result);
+                    callback(null, {arg: arg, re: result});
+                });
+            }, (err, result)=>{
+                console.log(err);
+            });*/
+            callback(null, {
+                arg: args,
+                re: 'xulanshan'
+            });
+        }
+
+        ], (err, result)=>{
+            res.send({
+                name: "message",
+                result:  {
+                    ARG: result.arg,
+                    SEND_USERNAME: result.re
+                }
+            });
+        });
+    });
+    
 app.get('/user/self_info',function(req,res){        //talking
     var queryMean = req.query.message;
-    console.log(req.query.message + "----" + req.session.Cookie);
+    console.log(queryMean + "----"+ req.session.Cookie);
+    // console.log();
+    console.log(cookieUser);
     if (typeof(queryMean) == 'undefined') {
         if (req.session.Cookie) {
             res.send('暂无新的消息');
@@ -153,51 +217,42 @@ app.get('/user/self_info',function(req,res){        //talking
         else
             res.send(false);
     } else {
-        if ( req.session.Cookie) {
-            var userID = req.session.Cookie.id;
-            console.log("query: " + queryMean + " ID:" +userID);
-            async.waterfall([
-                    //查询4
-                    function (callback) {              
-                        if ( queryMean == 'post') {
-                            mydatabase.query(user.getSelfPostQuery, [userID], function (err, result) {
-                                if (result == null || result == '')
-                                    callback(null, {
-                                        name: "info",
-                                        result: '0'
-                                    });
-                                else {
-                                    // console.log(result[0]);
-                                    callback(null, {
-                                        name: "info",
-                                        result: result
-                                    });
-                                }
-                            });
-                        }else{
-                            mydatabase.query(user.getSelfMessageQuery, [userID], function (err, result) {
-                                if (result == null || result == '')
-                                    callback(null, {
-                                        name: "message",
-                                        result: '0'
-                                    });
-                                else {
-                                    callback(null, {
-                                        name: "message",
-                                        result: result
-                                    });
-                                }
-                            });
-                        }
+        if ( req.session.Cookie || cookieUser ) {
+            var userID = cookieUser.id;
+            async.parallel([
+                    (callback)=>{
+                        mydatabase.query(user.getPostCount, [userID], (err,result)=>{
+                            if (result == null || result == '') {
+                                callback(null, {
+                                    result:'0'
+                                });
+                            } else {
+                                callback(null, {
+                                    result: result
+                                })
+                            }
+                        });
+                    },
+                    (callback)=>{
+                        mydatabase.query(user.getMessageCount, [userID], (err,result)=>{
+                            if (result == null || result == '') {
+                                callback(null, {
+                                    result:'0'
+                                });
+                            } else {
+                                callback(null, {
+                                    result: result
+                                })
+                            }
+                        });
                     }
-                ], function (err, result) {
-                    if (err) {
-                        console.log(err);
-                        res.send('失败');
-                    }else {
-                        res.send(result);
-                    }
-                });
+                ], (err, result)=>{
+                    res.send({
+                        post: result[0],
+                        message: result[1] 
+                    });
+            });
+            
         }else
             res.send(false);
     }
@@ -335,6 +390,7 @@ app.get('/getComments',function(req,res){
     }) ;
 }) ;
 
+
 //====================================文化界面============================================================
 
 //获取文化界面全部信息
@@ -357,7 +413,7 @@ app.get('/culture/spe_info',function(req,res){
         res.send({
             info: speInfo[(speInfo.infoIndex[info_index])],
             talks: result
-
+            
         });
     }) ;
    
